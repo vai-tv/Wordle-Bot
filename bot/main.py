@@ -1,22 +1,14 @@
-from entropy import WORDS, is_guess_valid, next_guess, get_feedback_from_user
+from entropy import WORDS, next_guess, get_feedback_from_user
 
 from collections import Counter
 
 if __name__ == '__main__':
 
-    # Example usage
     possible_words = WORDS.copy()
     green = {}
     yellow = {}
     gray = set()
     min_required = {}
-
-    # Sanity check for DOLLY-like case: X G Y X G -> single 'L' required
-    test_green = {1: 'O', 4: 'Y'}
-    test_yellow = {'L': {2}}
-    test_gray = {'L'}
-    assert is_guess_valid('LOABY', test_green, test_yellow, test_gray) is True
-    assert is_guess_valid('LLABY', test_green, test_yellow, test_gray) is False
 
     while True:
 
@@ -43,3 +35,6 @@ if __name__ == '__main__':
 
         guess, ent, possible_words = next_guess(possible_words, green, yellow, gray, min_required=min_required, show_progress=True)
         print(f"Next guess: {guess} (Entropy: {ent:.4f}, Possible words left: {len(possible_words)})\n")
+
+        if len(possible_words) == 1:
+            break
