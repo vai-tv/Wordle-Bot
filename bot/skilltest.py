@@ -2,6 +2,7 @@ import random as rnd
 
 from entropy import WORDS, feedback, next_guess, filter_words
 from utils import pattern_to_str
+from collections import Counter
 
 
 ####################################################################################################
@@ -24,12 +25,8 @@ def play(answer: str) -> int:
     guesses = 0
 
     while len(possible_words) > 1:
-        if len(possible_words) == len(WORDS):
-            guess = "raise"
-            print(f"First guess: {guess}\n")
-        else:
-            guess, ent, possible_words = next_guess(possible_words, green, yellow, gray, show_progress=True)
-            print(f"Next guess: {guess} (Entropy: {ent:.4f}, Possible words left: {len(possible_words)})")
+        guess, ent, possible_words = next_guess(possible_words, green, yellow, gray, show_progress=True)
+        print(f"Next guess: {guess} (Entropy: {ent:.4f}, Possible words left: {len(possible_words)})")
 
         guesses += 1
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
@@ -39,7 +36,6 @@ def play(answer: str) -> int:
             green[pos] = letter
             # each green increases the per-guess non-gray count
         # compute per-guess non-gray counts (greens + yellows for this guess)
-        from collections import Counter
         per_guess = Counter()
         for letter, _ in new_green:
             per_guess[letter] += 1
@@ -71,26 +67,40 @@ def play_all(n: int) -> None:
     rnd.shuffle(words_copy)
     results = []
 
-    for idx, answer in enumerate(words_copy[:n], start=1):
-        print(f"=== Game {idx}/{len(WORDS)}: Answer is '{answer}' ===\n")
-        results.append((play(answer), answer))
-        print("========================================\n")
+    try:
+        for idx, answer in enumerate(words_copy[:n], start=1):
+            print(f"=== Game {idx}/{len(WORDS)}: Answer is '{answer}' ===\n")
+            results.append((play(answer), answer))
+            print("========================================\n")
+    finally:
 
-    # Print statistics
-    guesses, answers = zip(*results)
+        # Print statistics
+        guesses, answers = zip(*results)
 
-    total_games = len(results)
-    total_guesses = sum(guesses)
-    average_guesses = total_guesses / total_games
-    max_guesses = max(guesses)
-    min_guesses = min(guesses)
+        total_games = len(results)
+        total_guesses = sum(guesses)
+        average_guesses = total_guesses / total_games
+        max_guesses = max(guesses)
+        min_guesses = min(guesses)
 
-    print(f"""
-    Played {total_games} games.
-    Average guesses: {average_guesses:.2f}
-    Max guesses: {max_guesses} (Answer: {results[results.index(max(results))][1]})
-    Min guesses: {min_guesses} (Answer: {results[results.index(min(results))][1]})
-""")
+        # Compute guess distribution
+        guess_distribution = {}
+        for g in guesses:
+            guess_distribution[g] = guess_distribution.get(g, 0) + 1
+        distr = []
+        for k, v in sorted(guess_distribution.items()):
+            distr.append(f"{k} guesses: {v} ({v/total_games*100:.0f}%)")
+        distr_str = " | ".join(distr)
+
+        print(f"""
+              
+========================================
+        Played {total_games} games.
+        Average guesses: {average_guesses:.2f}
+        Max guesses: {max_guesses} (Answer: {results[results.index(max(results))][1]})
+        Min guesses: {min_guesses} (Answer: {results[results.index(min(results))][1]})
+        Guess distribution: {distr_str}
+        """)
 
 
 if __name__ == '__main__':
