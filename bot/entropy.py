@@ -231,6 +231,11 @@ def entropy(guess, possible_answers=WORDS):
 # - Pick the word with the highest entropy as the next guess
 # - Receive feedback and filter the word list accordingly
 
+# Strategy constant: only use possible answers when below this threshold
+POSSIBLE_ANSWERS_THRESHOLD = 3
+
+# Opening guess - pre-computed to save time on first turn
+OPENING_GUESS = "raise"
 
 def next_guess(possible_words=WORDS, green=None, yellow=None, gray=None, min_required=None, show_progress=False):
     """
@@ -255,7 +260,7 @@ def next_guess(possible_words=WORDS, green=None, yellow=None, gray=None, min_req
     best_guess = None
 
     if len(filtered_words) == 1:
-        print("\n!! ANSWER FOUND !!")
+        print("\nAnswer found!")
         return filtered_words[0], max_entropy, filtered_words
     if len(filtered_words) == 0:
         print("No valid words remaining with the given constraints.")
@@ -264,22 +269,39 @@ def next_guess(possible_words=WORDS, green=None, yellow=None, gray=None, min_req
         print("GRAY", gray)
         exit(1)
 
-    start = time.time()
-    # Update at most ~100 times to avoid slowing down the loop with prints
-    update_interval = max(1, total // 100)
+    # Use pre-computed opening guess when starting from full word list
+    if len(filtered_words) == len(WORDS):
+        return OPENING_GUESS, entropy(OPENING_GUESS, WORDS), filtered_words
 
-    for idx, word in enumerate(WORDS, start=1):
+    start = time.time()
+    
+    # Strategy: when few possible answers remain, only consider those for guessing
+    # This ensures we don't pick obscure words when the answer pool is small
+    if len(filtered_words) < POSSIBLE_ANSWERS_THRESHOLD:
+        print("Guessing")
+        candidates = filtered_words
+        total_candidates = len(filtered_words)
+    else:
+        print("Eliminating")
+        candidates = WORDS
+        total_candidates = total
+    
+    # Update at most ~100 times to avoid slowing down the loop with prints
+    update_interval = max(1, total_candidates // 100)
+
+    for idx, word in enumerate(candidates, start=1):
         ent = entropy(word, filtered_words)
         if ent > max_entropy:
             max_entropy = ent
             best_guess = word
 
-        if show_progress and (idx % update_interval == 0 or idx == total):
+        # Show progress
+        if show_progress and (idx % update_interval == 0 or idx == total_candidates):
             elapsed = time.time() - start
             rate = idx / elapsed if elapsed > 0 else 0
-            remaining = (total - idx) / rate if rate > 0 else 0
-            pct = idx / total * 100
-            sys.stdout.write(f"\rComputing entropies: {idx}/{total} ({pct:.1f}%) ETA {remaining:.1f}s")
+            remaining = (total_candidates - idx) / rate if rate > 0 else 0
+            pct = idx / total_candidates * 100
+            sys.stdout.write(f"\rComputing entropies: {idx}/{total_candidates} ({pct:.1f}%) ETA {remaining:.1f}s")
             sys.stdout.flush()
 
     if show_progress:
