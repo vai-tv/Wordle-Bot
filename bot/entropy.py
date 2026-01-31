@@ -237,13 +237,18 @@ POSSIBLE_ANSWERS_THRESHOLD = 3
 # Opening guess - pre-computed to save time on first turn
 OPENING_GUESS = "raise"
 
-def next_guess(possible_words=WORDS, green=None, yellow=None, gray=None, min_required=None, show_progress=False):
+def next_guess(possible_words=WORDS, green: dict | None = None, yellow: dict | None = None, gray: set | None = None, min_required: dict | None = None, show_progress=False) -> tuple[str, float, list[str]]:
     """
-    Determine the next guess based on maximum entropy.
-    - possible_words: current list of possible words
-    - green: dict of position -> letter (correct letters in correct positions)
-    - yellow: dict of letter -> set of positions (correct letters in wrong positions)
-    - gray: set of letters (incorrect letters)
+    Computes the next guess based on the word list and current feedback.
+
+    The function takes the following parameters:
+    - possible_words: the list of words to consider for the next guess
+    - green: a dictionary mapping letter positions to letters that are definitely in the correct position
+    - yellow: a dictionary mapping letter positions to letters that are probably in the correct position
+    - gray: a set of letters that are definitely not in the correct position
+    - min_required: a dictionary mapping letters to their minimum required occurrences
+
+    The function returns a tuple containing the next guess, its entropy, and the filtered word list.
     """
 
     if green is None:
@@ -309,4 +314,58 @@ def next_guess(possible_words=WORDS, green=None, yellow=None, gray=None, min_req
         sys.stdout.write("\r" + " " * 80 + "\r")
         sys.stdout.flush()
 
+    if best_guess is None:
+        print("No valid guess found!")
+        exit(1)
+
     return best_guess, max_entropy, filtered_words
+
+
+def update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required) -> tuple[dict, dict, set, Counter]:
+    """
+    Process feedback from each guess separately to build min_required correctly
+    We need to extract per-guess feedback from the accumulated lists
+    Calculate min_required based on the final constraints, not per-guess counts
+
+    :param new_green: The green letters from the current guess
+    :param new_yellow: The yellow letters from the current guess
+    :param new_gray: The gray letters from the current guess
+    :param green: The accumulated green letters
+    :param yellow: The accumulated yellow letters
+    :param gray: The accumulated gray letters
+    :param min_required: The accumulated minimum required counts
+    :return: A tuple containing the updated green, yellow, gray, and min_required
+    """
+
+    for letter, pos in new_green:
+        green[pos] = letter
+
+    for letter, positions in new_yellow:
+        if letter not in yellow:
+            yellow[letter] = set()
+        yellow[letter].add(positions)
+
+    for letter, pos in new_gray:
+        gray.add(letter)
+
+    # Build min_required from current constraints:
+    # A letter needs to appear at least as many times as its green positions
+    # OR if it's in yellow/green, at least once
+    updated_min_required = Counter()
+
+    # Count greens
+    for pos, letter in green.items():
+        updated_min_required[letter] += 1
+
+    # For yellow letters not in green, require them to appear at least once
+    for letter in yellow:
+        if letter not in updated_min_required:
+            updated_min_required[letter] = 1
+
+    # Update global min_required: take the maximum for each letter
+    for letter, cnt in updated_min_required.items():
+        prev = min_required.get(letter, 0)
+        if cnt > prev:
+            min_required[letter] = cnt
+
+    return green, yellow, gray, min_required
