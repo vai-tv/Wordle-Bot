@@ -1,8 +1,7 @@
 import random as rnd
 
-from entropy import WORDS, feedback, next_guess, filter_words
+from entropy import WORDS, feedback, next_guess, filter_words, update_colours
 from utils import pattern_to_str
-from collections import Counter
 
 
 ####################################################################################################
@@ -32,26 +31,7 @@ def play(answer: str) -> int:
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
         print("Feedback:", pattern_to_str(code), "\n")
 
-        for letter, pos in new_green:
-            green[pos] = letter
-            # each green increases the per-guess non-gray count
-        # compute per-guess non-gray counts (greens + yellows for this guess)
-        per_guess = Counter()
-        for letter, _ in new_green:
-            per_guess[letter] += 1
-        for letter, positions in new_yellow:
-            if letter not in yellow:
-                yellow[letter] = set()
-            yellow[letter].add(positions)
-            per_guess[letter] += 1
-        for letter, pos in new_gray:
-            gray.add(letter)
-
-        # Update global min_required with maxima over per-guess counts
-        for letter, cnt in per_guess.items():
-            prev = min_required.get(letter, 0)
-            if cnt > prev:
-                min_required[letter] = cnt
+        green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
 
         if len(possible_words) == len(WORDS):
             possible_words = filter_words(possible_words, green, yellow, gray, min_required=min_required)
