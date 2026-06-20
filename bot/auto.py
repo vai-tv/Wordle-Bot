@@ -148,6 +148,7 @@ def main():
             grid.append([char.upper() for char in guess])
             screenshot = screenshot_wordle()
             colours = get_colours(grid, screenshot)
+            print("Received colours:", colours)
             new_green, new_yellow, new_gray = letters_colours_to_gxy(grid, colours)
             green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
 
