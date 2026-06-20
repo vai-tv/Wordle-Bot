@@ -31,6 +31,9 @@ def play(answer: str) -> int:
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
         print("Feedback:", pattern_to_str(code), "\n")
 
+        if pattern_to_str(code) == "GGGGG":
+            return guesses
+
         green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
 
         if len(possible_words) == len(WORDS):
