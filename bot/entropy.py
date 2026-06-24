@@ -9,11 +9,13 @@ import time
 from utils import load_words
 
 parser = argparse.ArgumentParser(description="Entropy-based Word Guessing Bot")
-parser.add_argument("-w", "--wordlist", type=str, required=True, help="Path to the word list file")
+parser.add_argument("-c", "--candidates", type=str, required=True, help="Path to the candidate word list file")
+parser.add_argument("-g", "--guessables", type=str, help="Path to the guessable word list file")
 args = parser.parse_args()
 
 
-WORDS = load_words(args.wordlist)
+CANDIDATES = load_words(args.candidates)
+GUESSABLES = load_words(args.guessables) if args.guessables else CANDIDATES
 
 ####################################################################################################
 # FEEDBACK 
@@ -203,7 +205,7 @@ def get_feedback_from_user() -> tuple[list[tuple[str, int]], list[tuple[str, int
 ####################################################################################################
 # ENTROPY CALCULATION
 
-def entropy(guess, possible_answers=WORDS):
+def entropy(guess, candidates=CANDIDATES):
     """
     Calculate the entropy of a guess over the current word list.
     Entropy is calculated based on the distribution of feedback patterns
@@ -212,11 +214,11 @@ def entropy(guess, possible_answers=WORDS):
 
     # Use a plain dict for counts (a bit faster than Counter here)
     pattern_counts = {}
-    for answer in possible_answers:
+    for answer in candidates:
         pattern, _, _, _ = feedback(guess, answer)
         pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
 
-    total_answers = len(possible_answers)
+    total_answers = len(candidates)
     ent = 0.0
     for count in pattern_counts.values():
         p = count / total_answers
@@ -235,20 +237,21 @@ def entropy(guess, possible_answers=WORDS):
 POSSIBLE_ANSWERS_THRESHOLD = 3
 
 # Opening guess - pre-computed to save time on first turn
-OPENING_GUESS = "raise"
+OPENING_GUESS = "tarse"
 
-def next_guess(possible_words=WORDS, green: dict | None = None, yellow: dict | None = None, gray: set | None = None, min_required: dict | None = None, show_progress=False) -> tuple[str, float, list[str]]:
+def next_guess(candidates=CANDIDATES, guessables=GUESSABLES, green: dict | None = None, yellow: dict | None = None, gray: set | None = None, min_required: dict | None = None, show_progress=False) -> tuple[str, float, list[str]]:
     """
     Computes the next guess based on the word list and current feedback.
 
     The function takes the following parameters:
-    - possible_words: the list of words to consider for the next guess
+    - candidates: a list of possible words to guess
+    - guessables: a list of words that can be guessed (may include non-candidates)
     - green: a dictionary mapping letter positions to letters that are definitely in the correct position
     - yellow: a dictionary mapping letter positions to letters that are probably in the correct position
     - gray: a set of letters that are definitely not in the correct position
     - min_required: a dictionary mapping letters to their minimum required occurrences
 
-    The function returns a tuple containing the next guess, its entropy, and the filtered word list.
+    The function returns a tuple containing the next guess, its entropy, and the filtered candidate list.
     """
 
     if green is None:
@@ -258,16 +261,16 @@ def next_guess(possible_words=WORDS, green: dict | None = None, yellow: dict | N
     if gray is None:
         gray = set()
 
-    filtered_words = filter_words(possible_words, green, yellow, gray, min_required=min_required)
+    filtered_candidates = filter_words(candidates, green, yellow, gray, min_required=min_required)
+    total_guessables = len(guessables)
 
-    total = len(WORDS)
     max_entropy = -1.0
     best_guess = None
 
-    if len(filtered_words) == 1:
+    if len(filtered_candidates) == 1:
         print("\nAnswer found!")
-        return filtered_words[0], max_entropy, filtered_words
-    if len(filtered_words) == 0:
+        return filtered_candidates[0], max_entropy, filtered_candidates
+    if len(filtered_candidates) == 0:
         print("No valid words remaining with the given constraints.")
         print("GREEN", green)
         print("YELLOW", yellow)
@@ -275,38 +278,35 @@ def next_guess(possible_words=WORDS, green: dict | None = None, yellow: dict | N
         exit(1)
 
     # Use pre-computed opening guess when starting from full word list
-    if len(filtered_words) == len(WORDS):
-        return OPENING_GUESS, entropy(OPENING_GUESS, WORDS), filtered_words
+    if len(filtered_candidates) == len(CANDIDATES):
+        return OPENING_GUESS, entropy(OPENING_GUESS, CANDIDATES), filtered_candidates
 
     start = time.time()
     
     # Strategy: when few possible answers remain, only consider those for guessing
     # This ensures we don't pick obscure words when the answer pool is small
-    if len(filtered_words) < POSSIBLE_ANSWERS_THRESHOLD:
+    if len(filtered_candidates) < POSSIBLE_ANSWERS_THRESHOLD:
         print("Guessing")
-        candidates = filtered_words
-        total_candidates = len(filtered_words)
+        guessables = filter_words(guessables, green, yellow, gray, min_required=min_required)
     else:
         print("Eliminating")
-        candidates = WORDS
-        total_candidates = total
-    
-    # Update at most ~100 times to avoid slowing down the loop with prints
-    update_interval = max(1, total_candidates // 100)
 
-    for idx, word in enumerate(candidates, start=1):
-        ent = entropy(word, filtered_words)
+    # Update at most ~100 times to avoid slowing down the loop with prints
+    update_interval = max(1, total_guessables // 100)
+
+    for idx, word in enumerate(guessables, start=1):
+        ent = entropy(word, filtered_candidates)
         if ent > max_entropy:
             max_entropy = ent
             best_guess = word
 
         # Show progress
-        if show_progress and (idx % update_interval == 0 or idx == total_candidates):
+        if show_progress and (idx % update_interval == 0 or idx == total_guessables):
             elapsed = time.time() - start
             rate = idx / elapsed if elapsed > 0 else 0
-            remaining = (total_candidates - idx) / rate if rate > 0 else 0
-            pct = idx / total_candidates * 100
-            sys.stdout.write(f"\rComputing entropies: {idx}/{total_candidates} ({pct:.1f}%) ETA {remaining:.1f}s")
+            remaining = (total_guessables - idx) / rate if rate > 0 else 0
+            pct = idx / total_guessables * 100
+            sys.stdout.write(f"\rComputing entropies: {idx}/{total_guessables} ({pct:.1f}%) ETA {remaining:.1f}s")
             sys.stdout.flush()
 
     if show_progress:
@@ -318,7 +318,7 @@ def next_guess(possible_words=WORDS, green: dict | None = None, yellow: dict | N
         print("No valid guess found!")
         exit(1)
 
-    return best_guess, max_entropy, filtered_words
+    return best_guess, max_entropy, filtered_candidates
 
 
 def update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required) -> tuple[dict, dict, set, Counter]:

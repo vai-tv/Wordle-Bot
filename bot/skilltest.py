@@ -1,6 +1,6 @@
 import random as rnd
 
-from entropy import WORDS, feedback, next_guess, filter_words, update_colours
+from entropy import GUESSABLES, CANDIDATES, feedback, next_guess, filter_words, update_colours
 from utils import pattern_to_str
 
 
@@ -14,7 +14,7 @@ def play(answer: str) -> int:
     :param answer: The correct answer word.
     :return: The number of guesses taken to find the answer.
     """
-    possible_words = WORDS.copy()
+    candidates = CANDIDATES.copy()
     green = {}
     yellow = {}
     gray = set()
@@ -23,36 +23,36 @@ def play(answer: str) -> int:
 
     guesses = 0
 
-    while len(possible_words) > 1:
-        guess, ent, possible_words = next_guess(possible_words, green, yellow, gray, show_progress=True)
-        print(f"Next guess: {guess} (Entropy: {ent:.4f}, Possible words left: {len(possible_words)})")
+    while len(candidates) > 1:
+        guess, ent, candidates = next_guess(candidates, GUESSABLES, green, yellow, gray, show_progress=True)
+        print(f"Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})")
 
         guesses += 1
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
         print("Feedback:", pattern_to_str(code), "\n")
 
-        if pattern_to_str(code) == "GGGGG":
+        if code == 242: # = GGGGG
             return guesses
 
         green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
 
-        if len(possible_words) == len(WORDS):
-            possible_words = filter_words(possible_words, green, yellow, gray, min_required=min_required)
+        if len(candidates) == len(CANDIDATES):
+            candidates = filter_words(candidates, green, yellow, gray, min_required=min_required)
     
     return guesses
         
 
 def play_all(n: int) -> None:
     """
-    Plays a game for each word in the WORDS list.
+    Plays a game for each word in the CANDIDATES list.
     """
-    words_copy = WORDS.copy()
-    rnd.shuffle(words_copy)
+    candidates_copy = CANDIDATES.copy()
+    rnd.shuffle(candidates_copy)
     results = []
 
     try:
-        for idx, answer in enumerate(words_copy[:n], start=1):
-            print(f"=== Game {idx}/{len(WORDS)}: Answer is '{answer}' ===\n")
+        for idx, answer in enumerate(candidates_copy[:n], start=1):
+            print(f"=== Game {idx}/{n}: Answer is '{answer}' ===\n")
             results.append((play(answer), answer))
             print("========================================\n")
     finally:
@@ -89,6 +89,6 @@ def play_all(n: int) -> None:
 if __name__ == '__main__':
 
     games = int(input("Enter number of games to play (0 for all): "))
-    games = games if games > 0 else len(WORDS)
+    games = games if games > 0 else len(CANDIDATES)
 
     play_all(games)
