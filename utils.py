@@ -1,3 +1,5 @@
+import random as rnd
+
 def load_words(file_path: str) -> list[str]:
     """Load words from a given file and return them as a list."""
     with open(file_path, 'r') as file:
@@ -31,3 +33,19 @@ def str_to_gyx(string: str):
         else:
             raise ValueError(f"Invalid character in pattern string: {ch}")
     return greens, yellows, greys
+
+def _format_guess_info(*, guess: str, ent: float, candidates_left: int, candidates: list[str]) -> str:
+    """Format the guess information for display.
+
+    Parameters:
+    - guess: the suggested next guess word
+    - ent: entropy value for the guess
+    - candidates_left: number of candidate words remaining
+    - candidates: list of candidate words
+    """
+    
+    sample_candidates = rnd.sample(candidates, min(10, len(candidates)))
+    return f"""
+Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {candidates_left})
+Candidates look like: {', '.join(sample_candidates)}
+"""
