@@ -1,0 +1,40 @@
+{
+    "main.py_introduction" : ["",
+        "========================================",
+        "hi welcome to the Wordle Bot 💥",
+        "this bot will literally DO the wordle for YOU >:O",
+        "juuust type in your word (doesnt have to be a real word) and the bot will do the rest!!",
+        "make sure you format the colours correctly (G for green, Y for yellow, and X for gray) and put em all together like this: gxyxx",
+        "oh btw FIVE letter words only!!",
+        "dont forget press Ctrl+C to exit the bot at any time 💥💥💥💥",
+        "========================================",
+        ""],
+
+
+    "auto.py_introduction" : ["",
+        "========================================",
+        "hi welcome to the Wordle Bot 💥",
+        "this bot will literally DO the wordle for YOU >:O",
+        "plsss make sure the wordle game is open and visible on your screen (like right now please!!)",
+        "the bot will take a screenshot of the game (i lwk havent done this very well so its only configured for MY screen resolution :l),",
+        "then it will analyze the letters and their colours (or try to idk its not very good at it),",
+        "and suggest the next guess based on the current state of the game (maybe!!)",
+        "dont forget press Ctrl+C to exit the bot at any time 💥💥💥💥",
+        "========================================",
+        ""],
+
+
+    "guess_info" : ["",
+        "Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})",
+        "Candidates look like: {', '.join(sample_candidates)}",
+        ""],
+
+
+    "play_all_summary" : ["",
+        "Played {total_games} games.",
+        "Average guesses: {average_guesses:.2f}",
+        "Max guesses: {max_guesses} (Answer: {results[results.index(max(results))][1]})",
+        "Min guesses: {min_guesses} (Answer: {results[results.index(min(results))][1]})",
+        "Guess distribution: {distr_str}",
+        ""]
+}

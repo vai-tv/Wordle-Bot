@@ -1,4 +1,9 @@
+import json
 import random as rnd
+
+
+with open('messages.json') as f:
+    messages = json.load(f)
 
 def load_words(file_path: str) -> list[str]:
     """Load words from a given file and return them as a list."""
@@ -44,7 +49,21 @@ def _format_guess_info(*, guess: str, ent: float, candidates: list[str]) -> str:
     """
     
     sample_candidates = rnd.sample(candidates, min(10, len(candidates)))
-    return f"""
-Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})
-Candidates look like: {', '.join(sample_candidates)}
-"""
+    return _format_message("guess_info").format(
+        guess=guess,
+        ent=ent,
+        candidates_left=len(candidates),
+        sample_candidates=', '.join(sample_candidates)
+    )
+
+def _format_message(message_key: str) -> str:
+    """Format a message from the messages.json file for display.
+
+    Parameters:
+    - message_key: the key in the messages.json file to retrieve the message
+    """
+    if message_key not in messages:
+        raise KeyError(f"Message key '{message_key}' not found in messages.json.")
+    
+    # Resolve any formatting too
+    return "\n".join(messages[message_key])
