@@ -25,16 +25,25 @@
 
 
     "guess_info" : ["",
-        "Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})",
-        "Candidates look like: {', '.join(sample_candidates)}",
+        "Guessed {guess} at entropy {ent:.4f}",
+        "Got back: {feedback} | eliminating...",
+        "{number_candidates} candidates look like: {sample_candidates}",
         ""],
+
+    "suggest_guess" : ["",
+        "Try {guess} (current entropy: {ent:.4f})",
+        "{number_candidates} candidates look like: {sample_candidates}"],
 
 
     "play_all_summary" : ["",
-        "Played {total_games} games.",
+        "{total_games} games were played!",
         "Average guesses: {average_guesses:.2f}",
-        "Max guesses: {max_guesses} (Answer: {results[results.index(max(results))][1]})",
-        "Min guesses: {min_guesses} (Answer: {results[results.index(min(results))][1]})",
-        "Guess distribution: {distr_str}",
-        ""]
+        "Max guesses: {max_guesses} (Answer: {max_answer})",
+        "Min guesses: {min_guesses} (Answer: {min_answer})",
+        "Guess distribution: {guess_distribution}",
+        ""],
+
+    "found_answer" : ["",
+    "Answer found!",
+    "Found {answer} in {guesses} guesses."]
 }
