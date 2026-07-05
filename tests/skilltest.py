@@ -25,7 +25,7 @@ def play(answer: str) -> int:
 
     while len(candidates) > 1:
         guess, ent, candidates = next_guess(candidates, GUESSABLES, green, yellow, gray, show_progress=True)
-        print(_format_guess_info(guess=guess, ent=ent, candidates_left=len(candidates), candidates=candidates))
+        print(_format_guess_info(guess=guess, ent=ent, candidates=candidates))
         
         guesses += 1
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
@@ -58,7 +58,7 @@ def play_all(n: int) -> None:
     finally:
 
         # Print statistics
-        guesses, answers = zip(*results)
+        guesses, _answers = zip(*results)
 
         total_games = len(results)
         total_guesses = sum(guesses)
