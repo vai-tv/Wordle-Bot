@@ -8,7 +8,7 @@ import pytesseract
 from pynput.keyboard import Controller, Key
 
 from bot.entropy import CANDIDATES, GUESSABLES, next_guess, update_colours
-from utils import _format_guess_info
+from utils import _format_guess_info, _format_message
 
 def screenshot_wordle():
     """
@@ -112,6 +112,8 @@ def letters_colours_to_gxy(grid, colours) -> tuple[list[tuple[str, int]], list[t
     return (green, yellow, gray)
 
 def main():
+
+    print(_format_message("auto.py_introduction"))
 
     keyboard = Controller()
 

@@ -1,8 +1,10 @@
 from bot.entropy import CANDIDATES, GUESSABLES, next_guess, get_feedback_from_user, update_colours
-from utils import _format_guess_info
+from utils import _format_guess_info, _format_message
 
 if __name__ == '__main__':
 
+    print(_format_message("main.py_introduction"))
+    
     candidates = CANDIDATES.copy()
     green = {}
     yellow = {}

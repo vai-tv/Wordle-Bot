@@ -1,7 +1,7 @@
 import random as rnd
 
 from bot.entropy import GUESSABLES, CANDIDATES, feedback, next_guess, filter_words, update_colours
-from utils import pattern_to_str, _format_guess_info
+from utils import pattern_to_str, _format_guess_info, _format_message
 
 
 ####################################################################################################
@@ -75,15 +75,14 @@ def play_all(n: int) -> None:
             distr.append(f"{k} guesses: {v} ({v/total_games*100:.0f}%)")
         distr_str = " | ".join(distr)
 
-        print(f"""
-              
-========================================
-        Played {total_games} games.
-        Average guesses: {average_guesses:.2f}
-        Max guesses: {max_guesses} (Answer: {results[results.index(max(results))][1]})
-        Min guesses: {min_guesses} (Answer: {results[results.index(min(results))][1]})
-        Guess distribution: {distr_str}
-        """)
+        print(_format_message("play_all_summary").format(
+            total_games=total_games,
+            total_guesses=total_guesses,
+            average_guesses=average_guesses,
+            max_guesses=max_guesses,
+            min_guesses=min_guesses,
+            guess_distribution=distr_str
+        ))
 
 
 if __name__ == '__main__':
