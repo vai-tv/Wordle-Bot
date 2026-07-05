@@ -39,8 +39,27 @@ def str_to_gyx(string: str):
             raise ValueError(f"Invalid character in pattern string: {ch}")
     return greens, yellows, greys
 
-def _format_guess_info(*, guess: str, ent: float, candidates: list[str]) -> str:
+def _format_guess_info(*, guess: str, ent: float, candidates: list[str], feedback: str) -> str:
     """Format the guess information for display.
+
+    Parameters:
+    - guess: the suggested next guess word
+    - ent: entropy value for the guess
+    - candidates: list of candidate words AFTER filtering based on previous feedback
+    - feedback: the feedback pattern received for the guess
+    """
+    
+    sample_candidates = rnd.sample(candidates, min(5, len(candidates)))
+    return _format_message("guess_info").format(
+        guess=guess,
+        ent=ent,
+        number_candidates=len(candidates),
+        sample_candidates=', '.join(sample_candidates),
+        feedback=feedback
+    )
+
+def _format_suggestion(*, guess: str, ent: float, candidates: list[str]) -> str:
+    """Format the suggestion message for display.
 
     Parameters:
     - guess: the suggested next guess word
@@ -48,11 +67,11 @@ def _format_guess_info(*, guess: str, ent: float, candidates: list[str]) -> str:
     - candidates: list of candidate words
     """
     
-    sample_candidates = rnd.sample(candidates, min(10, len(candidates)))
-    return _format_message("guess_info").format(
+    sample_candidates = rnd.sample(candidates, min(5, len(candidates)))
+    return _format_message("suggest_guess").format(
         guess=guess,
         ent=ent,
-        candidates_left=len(candidates),
+        number_candidates=len(candidates),
         sample_candidates=', '.join(sample_candidates)
     )
 
