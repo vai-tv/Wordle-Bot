@@ -34,18 +34,17 @@ def str_to_gyx(string: str):
             raise ValueError(f"Invalid character in pattern string: {ch}")
     return greens, yellows, greys
 
-def _format_guess_info(*, guess: str, ent: float, candidates_left: int, candidates: list[str]) -> str:
+def _format_guess_info(*, guess: str, ent: float, candidates: list[str]) -> str:
     """Format the guess information for display.
 
     Parameters:
     - guess: the suggested next guess word
     - ent: entropy value for the guess
-    - candidates_left: number of candidate words remaining
     - candidates: list of candidate words
     """
     
     sample_candidates = rnd.sample(candidates, min(10, len(candidates)))
     return f"""
-Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {candidates_left})
+Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})
 Candidates look like: {', '.join(sample_candidates)}
 """
