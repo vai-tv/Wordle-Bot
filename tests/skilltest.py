@@ -1,7 +1,7 @@
 import random as rnd
 
-from entropy import GUESSABLES, CANDIDATES, feedback, next_guess, filter_words, update_colours
-from utils import pattern_to_str
+from bot.entropy import GUESSABLES, CANDIDATES, feedback, next_guess, filter_words, update_colours
+from utils import pattern_to_str, _format_guess_info
 
 
 ####################################################################################################
@@ -25,8 +25,8 @@ def play(answer: str) -> int:
 
     while len(candidates) > 1:
         guess, ent, candidates = next_guess(candidates, GUESSABLES, green, yellow, gray, show_progress=True)
-        print(f"Next guess: {guess} (Entropy: {ent:.4f} | Candidates left: {len(candidates)})")
-
+        print(_format_guess_info(guess=guess, ent=ent, candidates_left=len(candidates), candidates=candidates))
+        
         guesses += 1
         code, new_green, new_yellow, new_gray = feedback(guess, answer)
         print("Feedback:", pattern_to_str(code), "\n")

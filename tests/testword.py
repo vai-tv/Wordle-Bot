@@ -1,5 +1,5 @@
-from skilltest import play
-from entropy import CANDIDATES
+from tests.skilltest import play
+from bot.entropy import CANDIDATES
 
 if __name__ == '__main__':
     test_word = input("Enter the test word: ").strip().lower()
