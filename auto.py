@@ -8,6 +8,7 @@ import pytesseract
 from pynput.keyboard import Controller, Key
 
 from bot.entropy import CANDIDATES, GUESSABLES, next_guess, update_colours
+from bot.feedback import filter_words
 from utils import _format_guess_info, _format_message
 
 def screenshot_wordle():
@@ -139,7 +140,6 @@ def main():
 
         while True:
             guess, ent, candidates = next_guess(candidates, GUESSABLES, green, yellow, gray, min_required=min_required, show_progress=True)
-            print(_format_guess_info(guess=guess, ent=ent, candidates=candidates))
 
             # send guess to Wordle
             keyboard.type(guess)
@@ -154,6 +154,12 @@ def main():
             print("Received colours:", colours)
             new_green, new_yellow, new_gray = letters_colours_to_gxy(grid, colours)
             green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
+
+            filtered_candidates = filter_words(candidates, green, yellow, gray, min_required=min_required)
+
+            feedback_string = ''.join(['G' if (char.lower(), idx) in new_green else 'Y' if (char.lower(), idx) in new_yellow else 'X' for idx, char in enumerate(guess)])
+            
+            print(_format_guess_info(guess=guess, ent=ent, candidates=filtered_candidates, feedback=feedback_string))
 
             if len(candidates) == 1:
                 time.sleep(2)
