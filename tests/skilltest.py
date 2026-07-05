@@ -58,9 +58,9 @@ def play_all(n: int) -> None:
 
     try:
         for idx, answer in enumerate(candidates_copy[:n], start=1):
-            print(f"=== Game {idx}/{n}: Answer is '{answer}' ===\n")
+            print(f"====== Game {idx}/{n}: Answer is '{answer}' ======\n")
             results.append((play(answer), answer))
-            print("========================================\n")
+            print("==============================================\n")
     except Exception as e:
         print(f"An error occurred which stopped the game: {e.__class__.__name__} {e} @ line {e.__traceback__.tb_lineno} in {e.__traceback__.tb_frame.f_code.co_filename}") # type: ignore
 
