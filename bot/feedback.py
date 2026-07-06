@@ -145,19 +145,20 @@ def filter_words(possible_words, green, yellow, gray, min_required=None):
             filtered.append(word)
     return filtered
 
-def get_feedback_from_user() -> tuple[list[tuple[str, int]], list[tuple[str, int]], list[tuple[str, int]]]:
+def get_feedback_from_user() -> tuple[list[tuple[str, int]], list[tuple[str, int]], list[tuple[str, int]], int]:
 
     greens = []
     yellows = []
     greys = []
+    guesses = 0
 
     while True:
 
         while True:
             user_guess = input("Enter a word you tried (5-letter word, DONE to finish): ")
             if user_guess.upper() == "DONE":
-                return greens, yellows, greys
-            
+                return greens, yellows, greys, guesses
+
             if len(user_guess) != 5:
                 print("Invalid guess. Please enter a 5-letter word.")
                 continue
@@ -177,5 +178,5 @@ def get_feedback_from_user() -> tuple[list[tuple[str, int]], list[tuple[str, int
                     yellows.append((user_guess[i], i))
                 elif c == 'x':
                     greys.append((user_guess[i], i))
-            
+            guesses += 1
             break

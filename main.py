@@ -17,9 +17,8 @@ def main():
 
     while True:
 
-        num_guesses += 1
-
-        new_green, new_yellow, new_gray = get_feedback_from_user()
+        new_green, new_yellow, new_gray, guesses = get_feedback_from_user()
+        num_guesses += guesses
         
         green, yellow, gray, min_required = update_colours(new_green, new_yellow, new_gray, green, yellow, gray, min_required)
 
