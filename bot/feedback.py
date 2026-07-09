@@ -155,18 +155,18 @@ def get_feedback_from_user() -> tuple[list[tuple[str, int]], list[tuple[str, int
     while True:
 
         while True:
-            user_guess = input("Enter a word you tried (5-letter word, DONE to finish): ")
+            user_guess = input("Enter a word you tried (DONE to finish): ")
             if user_guess.upper() == "DONE":
                 return greens, yellows, greys, guesses
 
             if len(user_guess) != 5:
-                print("Invalid guess. Please enter a 5-letter word.")
+                print("Please enter a 5-letter word.")
                 continue
 
             break
 
         while True:
-            user_input = input("Enter feedback (g for green, y for yellow, x for gray, e.g. 'ggyxx'): ")
+            user_input = input("Enter the color feedback for this word: ")
             if len(user_input) != 5 or any(c not in 'gyx' for c in user_input):
                 print("Invalid input. Please enter a 5-character string using 'g', 'y', and 'x'.")
                 continue
